@@ -1,0 +1,173 @@
+<div class="custom-subform-container" style="max-width: 950px; font-family: sans-serif; overflow-x: auto;">
+    <h3 style="color: #2b3d63; margin-bottom: 15px;">Documents</h3>
+
+    <table id="customSubformTableDOCS" style="width: 100%; border-collapse: collapse; margin-bottom: 15px; min-width: 3500px;">
+        <thead>
+            <tr style="background-color: #f7fafc; border-bottom: 1px solid #c5cae4;">
+                <th style="padding: 10px; text-align: center; font-size: 13px; color: #616e88; width: 40px;"></th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Client</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Document</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Document Type</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Document Name</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Document File</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Document Description</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Image Files</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Case</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Year</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Upload Due Date</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Upload Date</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Uploaded By</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Workdrive URL</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">WorkDrive File ID</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Assigned CPA</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Status</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Priority</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Staff Comments</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Record ID</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Reviewed By</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Review Comments</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Reviewed On</th>
+                <th style="padding: 10px; text-align: left; font-size: 13px; color: #616e88;">Assigned Reviewer</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <button type="button" onclick="addRow()" style="background-color: #f0f4f8; border: 1px dashed #4a90e2; color: #4a90e2; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">+ Add Row</button>
+
+    <input type="hidden" id="serializedSubformData" name="serializedSubformData">
+</div>
+
+<script>
+    const inputStyle = 'width:92%; height:34px; padding:0 8px; border:1px solid #c5cae4; border-radius:6px; outline:none; box-sizing: border-box;';
+    
+    // Appends a new document row dynamically
+    function addRow() {
+        const tbody = document.querySelector("#customSubformTableDOCS tbody");
+        const newRow = document.createElement("tr");
+        newRow.className = "subform-row";
+        newRow.style.borderBottom = "1px solid #edf2f7";
+        
+        newRow.innerHTML = `
+            <td style="padding: 8px 0; text-align: center;">
+                <button type="button" onclick="removeRow(this)" style="background:none; border:none; color:#e53e3e; cursor:pointer; font-weight:bold; font-size: 18px;">&times;</button>
+            </td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-client" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-document" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-doc-type" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-doc-name" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="file" multiple class="sf-doc-file" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-doc-desc" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="file" multiple class="sf-up-file1" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-case" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-year" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="date" class="sf-up-due" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-up-date" placeholder="DD-MMM-YYYY" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-up-by" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-workdrive-url" placeholder="URL" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-workdrive-id" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-cpa" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-status" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-priority" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-staff-comm" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-record-id" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-rev-by" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-rev-comm" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="date" class="sf-rev-on" style="${inputStyle}"></td>
+            <td style="padding: 8px 0;"><input type="text" class="sf-assigned-rev" style="${inputStyle}"></td>
+        `;
+        tbody.appendChild(newRow);
+    }
+
+    // Initialize with one empty row
+    document.addEventListener("DOMContentLoaded", function() {
+        addRow();
+    });
+
+    // Drops selected row matrix
+    function removeRow(button) {
+        const rows = document.querySelectorAll("#customSubformTableDOCS .subform-row");
+        if (rows.length > 1) {
+            button.closest("tr").remove();
+        }
+    }
+
+    // Helper: Safely gets value from an input
+    function getVal(row, selector) {
+        const el = row.querySelector(selector);
+        return el ? el.value.trim() : "";
+    }
+
+    // Helper: Retrieves file names into a stringified JSON array format "[]"
+    function getFileNames(row, selector) {
+        const fileInput = row.querySelector(selector);
+        if (fileInput && fileInput.files.length > 0) {
+            const fileNames = Array.from(fileInput.files).map(f => f.name);
+            return JSON.stringify(fileNames);
+        }
+        return "[]";
+    }
+
+    // Helper: Formats the Workdrive URL to match the requested JSON payload structure
+    function formatWorkdriveURL(urlValue) {
+        return JSON.stringify({
+            "Workdrive_URL": urlValue,
+            "zcurl": "",
+            "zctarget": "new"
+        });
+    }
+
+    // Encodes row fields into a clean JSON string matching the exact schema requirements
+    function serializeSubform() {
+        const rows = document.querySelectorAll("#customSubformTableDOCS .subform-row");
+        let dataArray = [];
+
+        rows.forEach((row, index) => {
+            // Require at least Client or Case to consider the row "active" and save it
+            const client = getVal(row, ".sf-client");
+            const caseId = getVal(row, ".sf-case");
+
+            if (client || caseId) {
+                const rowObject = {
+                    "Client": client,
+                    "Document": getVal(row, ".sf-document"),
+                    "Document_Type": getVal(row, ".sf-doc-type"),
+                    "Document_Name": getVal(row, ".sf-doc-name"),
+                    "Document_File": getFileNames(row, ".sf-doc-file"),
+                    "Document_Desciption": getVal(row, ".sf-doc-desc"),
+                    "Upload_File1": getFileNames(row, ".sf-up-file1"),
+                    "Case": caseId,
+                    "Year_field": getVal(row, ".sf-year"),
+                    "Upload_Due_Date": getVal(row, ".sf-up-due"),
+                    "Upload_Date": getVal(row, ".sf-up-date"), 
+                    "Uploaded_By": getVal(row, ".sf-up-by"),
+                    "Workdrive_URL": formatWorkdriveURL(getVal(row, ".sf-workdrive-url")),
+                    "WorkDrive_File_ID": getVal(row, ".sf-workdrive-id"),
+                    "Assigned_CPA": getVal(row, ".sf-cpa"),
+                    "Status": getVal(row, ".sf-status"),
+                    "Priority": getVal(row, ".sf-priority"),
+                    "Staff_Comments": getVal(row, ".sf-staff-comm"),
+                    "Record_ID": getVal(row, ".sf-record-id"),
+                    "Reviewed_By": getVal(row, ".sf-rev-by"),
+                    "Review_Comments": getVal(row, ".sf-rev-comm"),
+                    "Reviewed_On": getVal(row, ".sf-rev-on"),
+                    "Assigned_Reviewer": getVal(row, ".sf-assigned-rev"),
+                    "record::status": "added",
+                    "row::key": `t::row_${index + 1}`
+                };
+
+                dataArray.push(rowObject);
+            }
+        });
+
+        // Set the value as a clean JSON string
+        document.getElementById("serializedSubformData").value = JSON.stringify(dataArray);
+    }
+
+    // Call this before workflow processing / form submission
+    function saveDocumentDetails() {
+        serializeSubform();
+        console.log(document.getElementById("serializedSubformData").value);
+    }
+</script>

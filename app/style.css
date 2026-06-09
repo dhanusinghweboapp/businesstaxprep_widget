@@ -1,0 +1,593 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f5f7; 
+    color: #333;
+    min-height: 100vh; /* Ensures body takes full vertical height */
+}
+
+.container {
+    max-width: 100%;
+    min-height: 100vh; /* Ensures the white card reaches the bottom */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    box-sizing: border-box; /* Prevents padding from breaking width */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide System Tracking Fields */
+#Clients, #Case, #A_Master, #Personal_Master, #Entity_Master {
+    display: none !important;
+}
+
+/* ======================================
+   PROGRESS BAR
+   ====================================== */
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 70px; 
+    position: relative;
+    z-index: 10;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    width: 60px;
+}
+
+.step span {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e2e8f0; 
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.step p {
+    position: absolute;
+    top: 45px;
+    font-size: 12px;
+    color: #a0aec0;
+    white-space: normal;
+    text-align: center;
+}
+
+.line {
+    flex: 1;
+    height: 4px;
+    background: #e2e8f0;
+    position: relative;
+    z-index: 1;
+    margin: 0 -10px; 
+    transition: background 0.3s ease;
+}
+
+/* Progress States (Maroon Theme) */
+.step.completed span, .step.active span {
+    background: #8b0000;
+}
+
+.step.completed p, .step.active p {
+    color: #8b0000;
+    font-weight: 600;
+}
+
+.step.active span {
+    box-shadow: 0 0 0 6px rgba(139, 0, 0, 0.15); 
+}
+
+.step.completed + .line {
+    background: #8b0000;
+}
+
+/* ======================================
+   FORM LAYOUT & INPUTS
+   ====================================== */
+.form-step {
+    display: none;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+}
+
+.form-step.active {
+    display: block;
+    /* width:50%;
+    margin:0px 20% */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-step > label {
+    display: flex;
+    width: 250px;
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 20px;
+    vertical-align: middle;
+}
+
+.form-step > input:not([type="button"]), 
+.form-step > select, 
+.form-step > textarea,
+.form-step > div:not(.custom-subform-container):not(.btn-group):not(.address-container) {
+    display: inline-block;
+    /* width: calc(100% - 260px); */
+    width: 100%;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: middle;
+}
+
+.form-step > div > input:not([type="button"]) {
+    width: 100%;
+}
+
+input, select, textarea {
+    padding: 10px 12px;
+    border: 1px solid #c5cae4;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+    background-color: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #8b0000;
+}
+
+/* ======================================
+   ADDRESS SECTION
+   ====================================== */
+.address-container {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    max-width: 100%; /* Changed from 700px */
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.address-title {
+    font-size: 18px;
+    color: #2b3d63;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.address-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group.full-width {
+    grid-column: span 2;
+}
+
+.address-input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #c5cae4;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+    appearance: none;
+    width: 100%;
+}
+
+.address-input:focus {
+    border-color: #8b0000;
+}
+
+.address-label {
+    font-size: 13px;
+    color: #616e88;
+    margin-top: 6px;
+}
+
+/* ======================================
+   SUBFORMS / TABLES
+   ====================================== */
+.custom-subform-container {
+    width: 100% !important;
+        max-width: calc(100vw - 40px) !important; /* Locks width to screen size minus margins */
+        overflow-x: auto !important; /* Forces the scrollbar to appear here */
+        -webkit-overflow-scrolling: touch !important; /* Enables smooth swipe-scrolling on iOS */
+        /* display: block !important; */
+        padding-bottom: 15px !important; /* Gives room for the scrollbar */
+}
+.custom-subform-container h3 {
+    color: #2b3d63;
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.subform-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    min-width: 800px; 
+}
+
+.docs-table {
+    min-width: 3500px;
+}
+
+thead tr {
+    background-color: #f7fafc;
+    border-bottom: 1px solid #c5cae4;
+}
+
+th {
+    color: #616e88;
+    font-weight: 500;
+    text-align: left;
+    padding: 10px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Table Column Width Utilities */
+.col-icon { width: 40px; }
+.col-sm { width: 140px; }
+.col-md { width: 180px; }
+.text-center { text-align: center; }
+
+td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: top;
+}
+
+td input, td select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #c5cae4;
+    border-radius: 6px;
+    height: 36px;
+    box-sizing: border-box;
+}
+
+/* Custom Add/Remove Buttons */
+.add-row-btn {
+    background-color: #ffffff;
+    border: transparent;
+    color: #8b0000;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 10px;
+    transition: background-color 0.2s, text-decoration 0.2s;
+    display: inline-block;
+}
+
+.add-row-btn:hover {
+    /* text-decoration: underline; */
+    background-color: #F0E0E4;
+}
+.toast {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #8b0000;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateY(-100%);
+    animation: slideDown 0.3s ease forwards;
+}
+
+.toast.hide {
+    animation: slideUp 0.3s ease forwards;
+}
+.toast-close {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+#savebtnalignment{
+display: flex;
+  justify-content: flex-end;
+}
+.toast-close:hover {
+    opacity: 0.8;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-100%);
+    }
+}
+
+button[onclick^="remove"] {
+    background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* ======================================
+   BOTTOM NAVIGATION BUTTONS
+   ====================================== */
+.btn-group {
+    display: flex;
+    justify-content: space-between; /* Pushes Previous/Next to edges */
+    max-width: 100%; /* Optional: limits how far apart the buttons get */
+    margin: 40px auto 20px auto; /* Centers the button group horizontally */
+    gap: 20px; /* Ensures buttons don't touch on small screens */
+}
+
+button[onclick="prevStep()"] {
+    background-color: #8b0000;
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 20px;
+}
+
+button[onclick="prevStep()"]:hover {
+    background: #6a0000;
+}
+
+button[onclick^="save"], button[id$="Btn"] {
+    background-color: #8b0000;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 20px;
+}
+
+button[onclick^="save"]:hover, button[id$="Btn"]:hover {
+    background-color: #6a0000;
+}
+
+/* ======================================
+   SCROLLBARS 
+   ====================================== */
+::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #c5cae4; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #a0a8cc; 
+}
+button[onclick="nextStep()"] {
+ display: none;
+ }
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.mobile-top-nav {
+    display: none; /* Hidden by default on Desktop */
+}
+/* ======================================
+   MOBILE RESPONSIVE OVERRIDES (FORCE SWIPE)
+   ====================================== */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 20px 10px !important;
+        margin: 10px !important;
+        width: calc(100% - 20px) !important;
+        overflow: visible !important; 
+        box-sizing: border-box !important;
+    }
+
+    .progress-bar {
+        flex: 1;
+        width: 100% !important; 
+        margin-bottom: 0 !important;
+        padding-bottom: 15px !important;
+    }
+
+    /* Container for the mobile progress bar */
+    .progress-wrapper {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        background: #fff;
+        /* border: 2px solid #8b0000; Added to give it the defined bar look */
+        border-radius: 8px;
+        padding: 5px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+
+    /* Navigation Arrows */
+    .mobile-top-nav {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: #8b0000;
+        color: white;
+        border: none;
+        cursor: pointer;
+        height: 40px;
+        width: 40px;
+        border-radius: 4px;
+        font-size: 20px;
+        font-weight: bold;
+        flex-shrink: 0;
+        z-index: 20;
+    }
+
+    .mobile-top-nav:active {
+        background: #6a0000;
+    }
+
+    /* Hide all connecting lines */
+    .line {
+        display: none !important;
+    }
+
+    /* Hide all steps by default */
+    .step {
+        display: none !important;
+    }
+
+    /* Show ONLY the active step in the center */
+    .step.active {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex: 1 !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin-top: 20px;
+    }
+
+    .step.active span {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    /* Puts the label next to the number instead of under it */
+    .step.active p {
+        position: static !important;
+        margin-left: 10px;
+        font-size: 16px !important;
+        color: #8b0000 !important;
+        font-weight: bold !important;
+    }
+
+    .progress-bar::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* The rest of your mobile overrides below this remain unchanged */
+    .form-step > label {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+        font-weight: 500;
+    }
+
+    .form-step > input:not([type="button"]), 
+    .form-step > select, 
+    .form-step > textarea,
+    .form-step > div:not(.custom-subform-container):not(.btn-group):not(.address-container) {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 20px !important;
+    }
+
+    .form-step {
+        position: relative !important;
+        padding-top: 15px !important; /* Adjusted to prevent huge gap */
+    }
+
+    .btn-group, .form-step > div:last-child {
+        position: static !important;        
+    }
+
+    button[onclick="prevStep()"] {
+        display: none;
+    }
+    
+    /* Address Grid Mobile Fix */
+    .address-container {
+        display: block;
+    }
+    
+    .address-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    /* Disabled state for navigation buttons */
+button:disabled,
+.mobile-top-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed !important;
+    pointer-events: none; /* Prevents hover effects and clicks */
+}
+#savebtnalignment{
+display: block;
+  
+}
+}

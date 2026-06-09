@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Tax Preparation</title>
+    <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+    <script src="countryData.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-wrapper">
+                <button type="button" class="mobile-top-nav" id="mobilePrevBtn" onclick="prevStep()"><b>←</b>
+    </button>
+                <div class="step active" onclick="goToStep(1)">
+                    <span>1</span><p>Basic Information</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(2)">
+                    <span>2</span><p>Accounting & Finance</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(3)">
+                    <span>3</span><p>Income Overview</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(4)">
+                    <span>4</span><p>Expenses & Assets</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(5)">
+                    <span>5</span><p>Ownership & Shareholders</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(6)">
+                    <span>6</span><p>Compliance & Special Situation</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(7)">
+                    <span>7</span><p>Prior-Year Filling</p>
+                </div>
+                <div class="line"></div>
+                <div class="step" onclick="goToStep(8)">
+                    <span>8</span><p>Tax Classification</p>
+                </div>
+                 <div class="line"></div>
+                <div class="step" onclick="goToStep(9)">
+                    <span>9</span><p>Documents</p>
+                </div>
+                <button type="button" class="mobile-top-nav" id="mobileNextBtn" onclick="nextStep()"><b>→</b>
+    </button>
+            </div>
+        </div>
+
+        <div class="form-step active">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            <input type="text" id="Legal_Business_Name" placeholder="Legal Business Name">
+            <input type="text" id="Trade_Name" placeholder="Trade Name">
+            <label for="Entity_Type">Entity Type</label>
+            <select name="Entity_Type" id="Entity_Type">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Sole Proprietorship">Sole Proprietorship</option>
+                <option value="Single-Member LLC" >Single-Member LLC</option>
+                <option value="Multi-Member LLC">Multi-Member LLC</option>
+                 <option value="S-Corporation">S-Corporation</option>
+                <option value="C-Corporation" >C-Corporation</option>
+                <option value="Partnership">Partnership</option>
+                 <option value="Non-Profit">Non-Profit</option>
+                <option value="Other" >Other</option>
+                
+            </select>
+            <label for="State_of_Formation">State of Formation</label>
+            <select name="State_of_Formation" id="State_of_Formation">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Alabama" >Alabama</option>
+                <option value="Alaska">Alaska</option>
+                <option value="Arizona">Arizona</option>
+                <option value="Arkansas">Arkansas</option>
+                <option value="California">California</option>
+                <option value="Colorado">Colorado</option>
+                <option value="Connecticut">Connecticut</option>
+                <option value="Delaware">Delaware</option>
+                <option value="Florida">Florida</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Hawaii">Hawaii</option>
+                <option value="Idaho">Idaho</option>
+                <option value="Illinois">Illinois</option>
+                <option value="Indiana">Indiana</option>
+                <option value="Iowa">Iowa</option>
+                <option value="Kansas">Kansas</option>
+                <option value="Kentucky">Kentucky</option>
+                <option value="Louisiana">Louisiana</option>
+                <option value="Maine">Maine</option>
+                <option value="Maryland">Maryland</option>
+            </select>
+            <label for="Date_Business_Started">Date Business Started</label>
+            <input type="date" id="Date_Business_Started" placeholder="Date Business Started">
+             <input type="text" id="Primary_Business_Activity_Industry" placeholder="Primary Business Activity/Industry">
+              <div class="address-container">
+                <div class="address-title">Business Address</div>
+                <div class="address-grid">
+                    <div class="input-group full-width">
+                        <input type="text" id="address-line-1" class="address-input">
+                        <label for="address-line-1" class="address-label">Address Line 1</label>
+                    </div>
+                    <div class="input-group full-width">
+                        <input type="text" id="address-line-2" class="address-input">
+                        <label for="address-line-2" class="address-label">Address Line 2</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="city-district" class="address-input">
+                        <label for="city-district" class="address-label">City / District</label>
+                    </div>
+                    <div class="input-group">
+                        <select id="state-dropdown" class="address-input" disabled>
+                            <option value="" disabled selected>Select country first</option>
+                        </select>
+                        <label for="state-dropdown" class="address-label">State / Province</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="postal-code" class="address-input">
+                        <label for="postal-code" class="address-label">Postal Code</label>
+                    </div>
+                    <div class="input-group">
+                        <select id="country-dropdown" class="address-input">
+                            <option value="" disabled selected>Loading countries...</option>
+                        </select>
+                        <label for="country-dropdown" class="address-label">Country</label>
+                    </div>
+                </div>
+            </div>
+             <label for="Is_this_the_same_as_your_mailing_address">Is this the same as your mailing address?</label>
+            <select name="Is_this_the_same_as_your_mailing_address" id="Is_this_the_same_as_your_mailing_address">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+             
+            <input type="text" id="Mailing_Address" placeholder="Mailing Address">
+            <input type="text" id="Business_EIN" placeholder="Business EIN">
+            <label for="Do_you_need_us_to_apply_for_an_EIN">Do you need us to apply for an EIN?</label>
+            <select name="Do_you_need_us_to_apply_for_an_EIN" id="Do_you_need_us_to_apply_for_an_EIN">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            
+            <div id="savebtnalignment" class="btn-group" >
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+            <button type="button"  id="basicBtn" onclick="savePersonalDetailsbasic()">Save & Next</button>
+         </div>
+        </div>
+
+        <div class="form-step ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+           
+            
+            <label for="Accounting_Method">Accounting Method</label>
+            <select name="Accounting_Method" id="Accounting_Method">
+                <option value="" disabled selected>-Select-</option>
+                 <option value="Cash">Cash</option>
+    <option value="Accrual">Accrual</option>
+    <option value="Not sure">Not sure</option>
+            </select>
+            <label for="Do_you_use_accounting_software">Do you use accounting software?</label>
+            <select name="Do_you_use_accounting_software" id="Do_you_use_accounting_software">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <label for="Accounting_Software">Accounting Software</label>
+            <select name="Accounting_Software" id="Accounting_Software">
+                <option value="" disabled selected>-Select-</option>
+                <option value="QuickBooks">QuickBooks</option>
+    <option value="Xero">Xero</option>
+    <option value="Wave">Wave</option>
+    <option value="Other">Other</option>
+            </select>
+            <label for="Do_we_have_access_to_your_accounting_software">Do we have access to your accounting software?</label>
+            <select name="Do_we_have_access_to_your_accounting_software" id="Do_we_have_access_to_your_accounting_software">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            
+            <div class="custom-subform-container">
+                <h3>Business Bank Accounts</h3>
+                <table id="customSubformTable" class="subform-table">
+                    <thead>
+                        <tr>
+                            <th class="col-icon"></th>
+                            <th>Bank Name</th>
+                            <th class="col-md">Last 4 digits</th>
+                            <th class="col-sm">Business or personal?</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <button type="button" class="add-row-btn" onclick="addsoftwareRow()">+ Add Row</button>
+            </div>
+            <label for="Do_you_have_business_credit_cards">Do you have business credit cards?</label>
+            <select name="Do_you_have_business_credit_cards" id="Do_you_have_business_credit_cards">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="educationBtn" onclick="savesoftwareDetails()">Save & Next</button>
+            </div>
+        </div>
+
+        <div class="form-step">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <label for="Primary_income_sources">Primary income sources</label>
+            <select name="Primary_income_sources" id="Primary_income_sources" multiple>
+                <option value="" disabled selected>-Select-</option>
+                <option value="Services">Services</option>
+                <option value="Product sales">Product sales</option>
+                <option value="Online sales">Online sales</option>
+                <option value="Contract income (1099)">Contract income (1099)</option>
+                <option value="Other">Other</option>
+            </select>
+            
+             <label for="Approximate_gross_revenue_for_the_year">Approximate gross revenue for the year</label>
+            <select name="Approximate_gross_revenue_for_the_year" id="Approximate_gross_revenue_for_the_year">
+                <option value="" disabled selected>-Select-</option>
+                <option value="$50k">$50k</option>
+    <option value="$50k–$100k">$50k–$100k</option>
+    <option value="$100k–$250k">$100k–$250k</option>
+    <option value="$250k+">$250k+</option>
+            </select>
+             <label for="Did_you_receive_any_1099s">Did you receive any 1099s?</label>
+            <select name="Did_you_receive_any_1099s" id="Did_you_receive_any_1099s">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveEntIncomeDetails()">Save & Next</button>
+            </div>
+        </div> 
+
+        <div class="form-step ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+             <label for="Do_you_have_employees">Do you have employees?</label>
+            <select name="Do_you_have_employees" id="Do_you_have_employees">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <input type="text" id="Payroll_provider" placeholder="Payroll provider">
+            <input type="text" id="Number_of_employees" placeholder="Number of employees">
+            <label for="Did_you_purchase_or_sell_any_business_assets_this_year">Did you purchase or sell any business assets this year?</label>
+            <select name="Did_you_purchase_or_sell_any_business_assets_this_year" id="Did_you_purchase_or_sell_any_business_assets_this_year">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <input type="text" id="Asset_type" placeholder="Asset type">
+             <label for="Purchase_Date">Purchase Date</label>
+            <input type="date" id="Purchase_Date" placeholder="Purchase Date">
+            <input type="text" id="Purchase_price" placeholder="Purchase price">
+            <label for="Do_you_use_a_vehicle_for_business">Do you use a vehicle for business?</label>
+            <select name="Do_you_use_a_vehicle_for_business" id="Do_you_use_a_vehicle_for_business">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+          <div class="form-group">
+    <label>Vehicle ownership</label>
+    <div class="checkbox-group">
+        <label>
+            <input type="checkbox" name="Vehicle_ownership" value="Personal">
+            Personal
+        </label>
+
+        <label>
+            <input type="checkbox" name="Vehicle_ownership" value="Business">
+            Business
+        </label>
+
+    </div>
+     <input type="text" id="Mileage_tracking_method" placeholder="Mileage tracking method">
+</div>
+           
+
+
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveEntExpensesDetails()">Save & Next</button>
+            </div>
+        </div> 
+
+        <div class="form-step ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <label for="Number_of_owners">Number of owners</label>
+            <div><input type="number" id="Number_of_owners" name="Number_of_owners" /></div>
+            <div class="custom-subform-container">
+                <h3>Owner Details</h3>
+                <table id="customSubformTableOWNER" class="subform-table">
+                    <thead>
+                        <tr>
+                            <th class="col-icon"></th>
+                            <th>Bank Owner Name</th>
+                            <th class="col-md">Ownership</th>
+                            <th class="col-role">Role</th>
+                            <th class="col-">Owner SSN/ITIN</th>
+                            <th class="col-sm">Owner Address</th>
+                            <th class="col-sm">Email</th>
+                            <th class="col-sm">Is this owner active in the business?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <button type="button" class="add-row-btn" onclick="addOwnerRow()">+ Add Row</button>
+            </div>
+           <label for="Any_ownership_changes_during_the_year">Any ownership changes during the year?</label>
+            <select name="Any_ownership_changes_during_the_year" id="Any_ownership_changes_during_the_year">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+             <input type="text" id="Details_of_change" placeholder="Details of change">
+             <input type="text" id="Date_of_change" placeholder="Date of change">
+
+
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveOwnerDetails()">Save & Next</button>
+            </div>
+        </div> 
+
+        <div class="form-step ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <label for="Any_sales_tax_obligations">Any sales tax obligations?</label>
+            <select name="Any_sales_tax_obligations" id="Any_sales_tax_obligations">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <label for="Any_foreign_owners_or_foreign_income">Any foreign owners or foreign income?</label>
+            <select name="Any_foreign_owners_or_foreign_income" id="Any_foreign_owners_or_foreign_income">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <label for="Any_estimated_tax_payments_made">Any estimated tax payments made?</label>
+            <select name="Any_estimated_tax_payments_made" id="Any_estimated_tax_payments_made">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <label for="Any_major_changes_expected_next_year">Any major changes expected next year?</label>
+            <select name="Any_major_changes_expected_next_year" id="Any_major_changes_expected_next_year">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+           
+            
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveComplianceDetails()">Save & Next</button>
+            </div>
+        </div> 
+
+        <div class="form-step">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <label for="Have_prior_year_business_tax_returns_been_filed">Have prior-year business tax returns been filed?</label>
+            <select name="Have_prior_year_business_tax_returns_been_filed" id="Have_prior_year_business_tax_returns_been_filed">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <label for="Upload_prior_year_returns">Upload prior-year returns</label>
+  <input type="file" id="Upload_prior_year_returns" name="Upload_prior_year_returns" accept="image/png, image/jpeg, image/webp">
+            <label for="Any_notices_from_IRS_or_state_agencies">Any notices from IRS or state agencies?</label>
+            <select name="Any_notices_from_IRS_or_state_agencies" id="Any_notices_from_IRS_or_state_agencies">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+
+            
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveEntPriorDetails()">Save & Next</button>
+            </div>
+        </div>
+
+        <div class="form-step ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <label for="How_is_the_entity_currently_taxed">How is the entity currently taxed</label>
+            <select name="How_is_the_entity_currently_taxed" id="How_is_the_entity_currently_taxed">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Schedule C">Schedule C</option>
+    <option value="Partnership (1065)">Partnership (1065)</option>
+    <option value="S-Corp (1120-S)">S-Corp (1120-S)</option>
+    <option value="C-Corp (1120)">C-Corp (1120)</option>
+    <option value="Not Sure">Not Sure</option>
+            </select>
+             <label for="Has_the_entity_ever_made_an_S_Corp_election">Has the entity ever made an S-Corp election ?</label>
+            <select name="Has_the_entity_ever_made_an_S_Corp_election" id="Has_the_entity_ever_made_an_S_Corp_election">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Not Sure">Not Sure</option>
+            </select>
+            <label for="Effective_date_of_S_Corp_election">Effective date of S-Corp election</label>
+            <input type="date" id="Effective_date_of_S_Corp_election">
+             <label for="Is_the_entity_new_this_tax_year">Is the entity new this tax year?</label>
+            <select name="Is_the_entity_new_this_tax_year" id="Is_the_entity_new_this_tax_year">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select> 
+            <label for="Is_this_entity_part_of_a_group_or_related_to_other_businesses">Is this entity part of a group or related to other businesses?</label>
+            <select name="Is_this_entity_part_of_a_group_or_related_to_other_businesses" id="Is_this_entity_part_of_a_group_or_related_to_other_businesses">
+                <option value="" disabled selected>-Select-</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+            <input type="text" id="List_related_entities" placeholder="List related entities">
+            
+
+            
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveEnttaxDetails()">Save & Next</button>
+            </div>
+        </div>
+
+        <div class="form-step  ">
+            <input type="text" id="Clients" placeholder="Client">
+            <input type="text" id="Case" placeholder="Case">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            <input type="text" id="Personal_Master" placeholder="Personal_Master">
+            <input type="text" id="Entity_Master" placeholder="Entity_Master">
+            
+            <div class="custom-subform-container">
+                <h3>Documents</h3>
+                <table id="customSubformTableDOCS" class="subform-table docs-table">
+                    <thead>
+                        <tr>
+                            <th class="col-icon"></th>
+                            <!-- <th>Client</th> -->
+                            <th>Document</th>
+                            <th>Document Type</th>
+                            <th>Document Name <span style="color: red;">*</span></th>
+                            <th>Document File</th>
+                            <th>Document Description</th>
+                            <th>Image Files</th>
+                            <!-- <th>Case</th> -->
+                            <th>Year</th>
+                            <th>Upload Due Date</th>
+                            <th>Upload Date</th>
+                            <th>Uploaded By</th>
+                            <th>Workdrive URL</th>
+                            <th>WorkDrive File ID</th>
+                            <th>Assigned CPA</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Staff Comments</th>
+                            <th>Record ID</th>
+                            <th>Reviewed By</th>
+                            <th>Review Comments</th>
+                            <th>Reviewed On</th>
+                            <th>Assigned Reviewer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <button type="button" class="add-row-btn" onclick="addDocumentRow()">+ Add Row</button>
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" title="Back" onclick="prevStep()">Previous</button>
+                <button type="button" title="Next" onclick="nextStep()">Next</button>
+                <button type="button" id="basicBtn" onclick="saveDocumentsDetails()">Save & Next</button>
+            </div>
+        </div> 
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
