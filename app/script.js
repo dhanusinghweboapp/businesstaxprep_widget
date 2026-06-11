@@ -1,4 +1,3 @@
-
 const APP_NAME = "hopkins-cpa";
 let currentStep = 1;
 
@@ -53,16 +52,9 @@ function showToast(message) {
         clearTimeout(timeout);
     };
 
-    // Start auto-dismiss timer
     startTimer();
-
-    // Pause timer on hover
     toast.addEventListener("mouseenter", stopTimer);
-
-    // Resume timer on mouse leave
     toast.addEventListener("mouseleave", startTimer);
-
-    // Close button
     toast.querySelector(".toast-close").addEventListener("click", () => {
         clearTimeout(timeout);
         removeToast();
@@ -71,7 +63,6 @@ function showToast(message) {
 
 function syncMasterRecord(stepNum, stepRecordId, isFinalSubmit = false) {
     return new Promise((resolve) => {
-        // Retrieve Entity_Master ID from DOM if not already in memory
         if (!masterRecordId) {
             const masterInput = document.querySelector("#Entity_Master");
             if (masterInput && masterInput.value) {
@@ -137,7 +128,7 @@ function syncMasterRecord(stepNum, stepRecordId, isFinalSubmit = false) {
 
             ZOHO.CREATOR.API.addRecord({
                 appName: APP_NAME,
-                formName: "Entity_Master", // Assuming Entity_Master is the master form name
+                formName: "Entity_Master", 
                 data: masterData
             }).then(function(response) {
                 if (response.code == 3000) {
@@ -152,7 +143,7 @@ function syncMasterRecord(stepNum, stepRecordId, isFinalSubmit = false) {
         } else if (masterRecordId) {
             ZOHO.CREATOR.API.updateRecord({
                 appName: APP_NAME,
-                reportName: "Business_Tax_Prep", // Adjust based on your actual Master Report name
+                reportName: "Business_Tax_Prep", 
                 id: masterRecordId,
                 data: masterData
             }).then(function(response) {
@@ -170,7 +161,7 @@ function syncMasterRecord(stepNum, stepRecordId, isFinalSubmit = false) {
 }
 
 // ======================================
-// INIT
+// INIT & STATE RESTORATION
 // ======================================
 ZOHO.CREATOR.init().then(function () {
     console.log("Widget Initialized");
@@ -186,16 +177,76 @@ ZOHO.CREATOR.init().then(function () {
             if (caseValue) {
                 document.querySelectorAll("#Case").forEach(input => input.value = caseValue);
             }
-            if (queryParams.masterid) {
-                document.querySelectorAll("#Entity_Master").forEach(input => input.value = queryParams.masterid);
-                masterRecordId = queryParams.masterid; 
-            }
             if (queryParams.personalmasterid) {
                 document.querySelectorAll("#Personal_Master").forEach(input => input.value = queryParams.personalmasterid);
             }
             if (queryParams.Legal_Business_Name) {
                 const nameInput = document.querySelector("#Legal_Business_Name");
                 if (nameInput) nameInput.value = decodeURIComponent(queryParams.Legal_Business_Name);
+            }
+            if (queryParams.masterid) {
+                document.querySelectorAll("#Entity_Master").forEach(input => input.value = queryParams.masterid);
+                masterRecordId = queryParams.masterid; 
+                
+                // Fetch the existing Entity Master Record to resume progress
+                ZOHO.CREATOR.API.getRecordById({
+                    appName: APP_NAME,
+                    reportName: "Business_Tax_Prep", // Adjust if your master report is different
+                    id: masterRecordId
+                }).then(function(response) {
+                    if (response.code === 3000) {
+                        const masterData = response.data;
+                        const safeGetId = (field) => field && field.ID ? field.ID : (typeof field === 'string' ? field : null);
+
+                        // Restore Record IDs into memory
+                        basicsRecordId = safeGetId(masterData.Entity_Basics);
+                        accountingRecordId = safeGetId(masterData.Entity_Accounting_Financial_Information);
+                        incomeRecordId = safeGetId(masterData.Entity_Income_Overview);
+                        expensesRecordId = safeGetId(masterData.Entity_Expenses_Assets);
+                        ownershipRecordId = safeGetId(masterData.Entity_Ownership_Shareholders_Members);
+                        complianceRecordId = safeGetId(masterData.Entity_Compliance_Special_Situations);
+                        priorYearRecordId = safeGetId(masterData.Entity_Prior_Year_Filings);
+                        taxClassRecordId = safeGetId(masterData.Entity_Tax_Classification);
+                        documentsRecordId = safeGetId(masterData.Document_Upload_Wizard);
+                        
+                        prefillCompletedSteps();
+
+                        // Determine which step to resume
+                        let resumeStep = parseInt(masterData.Current_Step, 10);
+                        if (isNaN(resumeStep) || resumeStep < 1) resumeStep = 1;
+
+                        const stepConfig = [
+                            { id: basicsRecordId, selector: "#basicBtn", fn: updatePersonalDetailsbasic },
+                            { id: accountingRecordId, selector: "#educationBtn", fn: updatesoftwareDetails },
+                            { id: incomeRecordId, selector: "#basicBtn", fn: updateEntIncomeDetails },
+                            { id: expensesRecordId, selector: "#basicBtn", fn: updateEntExpensesDetails },
+                            { id: ownershipRecordId, selector: "#basicBtn", fn: updateOwnerDetails },
+                            { id: complianceRecordId, selector: "#basicBtn", fn: updateComplianceDetails },
+                            { id: priorYearRecordId, selector: "#basicBtn", fn: updateEntPriorDetails },
+                            { id: taxClassRecordId, selector: "#basicBtn", fn: updateEnttaxDetails }
+                        ];
+
+                        for (let i = 0; i < resumeStep - 1; i++) {
+                            if (steps[i]) steps[i].classList.add("completed");
+                            
+                            if (i < stepConfig.length && stepConfig[i].id) {
+                                const stepEl = formSteps[i];
+                                // Fallback sequence: custom selector or generic last button in step
+                                const btn = stepEl.querySelector(stepConfig[i].selector) || stepEl.querySelector(".btn-group button:last-child");
+                                if (btn) {
+                                    btn.innerText = "Update & Next";
+                                    btn.onclick = stepConfig[i].fn;
+                                }
+                            }
+                        }
+
+                        if (resumeStep === 9) {
+                            loadStep9Documents();
+                        } else {
+                            showStep(resumeStep);
+                        }
+                    }
+                });
             }
         }
     } catch (error) {
@@ -209,6 +260,7 @@ document.addEventListener("DOMContentLoaded", function() {
     addOwnerRow();
     addDocumentRow();
     updateNavButtons(currentStep);
+    
     // --- STEP 2: Accounting & Finance ---
     const useAccSoftware = document.querySelector("#Do_you_use_accounting_software");
     if (useAccSoftware) {
@@ -283,13 +335,279 @@ function goToStep(step) {
     else if (step == 6) { ownershipRecordId ? showStep(6) : showToast("Please complete Ownership Details first"); }
     else if (step == 7) { complianceRecordId ? showStep(7) : showToast("Please complete Compliance first"); }
     else if (step == 8) { priorYearRecordId ? showStep(8) : showToast("Please complete Prior-Year Fillings first"); }
-    else if (step == 9) { taxClassRecordId ? showStep(9) : showToast("Please complete Tax Classification first"); }
+    else if (step == 9) { taxClassRecordId ? loadStep9Documents() : showToast("Please complete Tax Classification first"); }
 }
 
 function prevStep() {
     let targetStep = currentStep - 1;
     if (targetStep < 1) targetStep = 1;
     showStep(targetStep);
+}
+
+// ======================================
+// PREFILL EXISTING DATA (ENTITY)
+// ======================================
+function prefillCompletedSteps() {
+    // STEP 1: Entity Basics
+    if (basicsRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "All_Entity_Basics", id: basicsRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[0];
+                
+                if(step.querySelector("#Legal_Business_Name")) step.querySelector("#Legal_Business_Name").value = d.Legal_Business_Name || "";
+                if(step.querySelector("#Trade_Name")) step.querySelector("#Trade_Name").value = d.Trade_Name || "";
+                if(step.querySelector("#Entity_Type")) step.querySelector("#Entity_Type").value = d.Entity_Type || "";
+                if(step.querySelector("#State_of_Formation")) step.querySelector("#State_of_Formation").value = d.State_of_Formation || "";
+                if(step.querySelector("#Date_Business_Started")) step.querySelector("#Date_Business_Started").value = d.Date_Business_Started || "";
+                if(step.querySelector("#Primary_Business_Activity_Industry")) step.querySelector("#Primary_Business_Activity_Industry").value = d.Primary_Business_Activity_Industry || "";
+                
+                if (d.Business_Address) {
+                    if(step.querySelector("#address-line-1")) step.querySelector("#address-line-1").value = d.Business_Address.address_line_1 || "";
+                    if(step.querySelector("#address-line-2")) step.querySelector("#address-line-2").value = d.Business_Address.address_line_2 || "";
+                    if(step.querySelector("#city-district")) step.querySelector("#city-district").value = d.Business_Address.district_city || "";
+                    if(step.querySelector("#postal-code")) step.querySelector("#postal-code").value = d.Business_Address.postal_Code || "";
+                    
+                    if(step.querySelector("#country-dropdown")) {
+                        step.querySelector("#country-dropdown").value = d.Business_Address.country || "";
+                        step.querySelector("#country-dropdown").dispatchEvent(new Event('change'));
+                    }
+                    setTimeout(() => {
+                        if(step.querySelector("#state-dropdown")) step.querySelector("#state-dropdown").value = d.Business_Address.state_province || "";
+                    }, 100); 
+                }
+
+                if(step.querySelector("#Is_this_the_same_as_your_mailing_address")) {
+                    const sel = step.querySelector("#Is_this_the_same_as_your_mailing_address");
+                    sel.value = d.Is_this_the_same_as_your_mailing_address || "Yes";
+                    sel.dispatchEvent(new Event('change')); 
+                }
+                if(step.querySelector("#Mailing_Address")) step.querySelector("#Mailing_Address").value = d.Mailing_Address || "";
+                if(step.querySelector("#Business_EIN")) step.querySelector("#Business_EIN").value = d.Business_EIN || "";
+                if(step.querySelector("#Do_you_need_us_to_apply_for_an_EIN")) step.querySelector("#Do_you_need_us_to_apply_for_an_EIN").value = d.Do_you_need_us_to_apply_for_an_EIN || "";
+            }
+        });
+    }
+
+    // STEP 2: Accounting
+    if (accountingRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "Entity_Accounting_Financial_Information_Report", id: accountingRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[1];
+                
+                if(step.querySelector("#Accounting_Method")) step.querySelector("#Accounting_Method").value = d.Accounting_Method || "";
+                
+                const useSW = step.querySelector("#Do_you_use_accounting_software");
+                if (useSW) {
+                    useSW.value = d.Do_you_use_accounting_software || "No";
+                    useSW.dispatchEvent(new Event('change'));
+                }
+                if(step.querySelector("#Accounting_Software")) step.querySelector("#Accounting_Software").value = d.Accounting_Software || "";
+
+                const haveAccess = step.querySelector("#Do_we_have_access_to_your_accounting_software");
+                if (haveAccess) {
+                    haveAccess.value = d.Do_we_have_access_to_your_accounting_software || "No";
+                    haveAccess.dispatchEvent(new Event('change'));
+                }
+
+                if(step.querySelector("#Do_you_have_business_credit_cards")) step.querySelector("#Do_you_have_business_credit_cards").value = d.Do_you_have_business_credit_cards || "";
+
+                // Populate Business Bank Accounts Subform
+                if (d.Do_we_have_access_to_your_accounting_software === "Yes" && d.Business_Bank_Accounts && d.Business_Bank_Accounts.length > 0) {
+                    const tbody = document.querySelector("#customSubformTable tbody");
+                    if(tbody) tbody.innerHTML = "";
+                    d.Business_Bank_Accounts.forEach(bank => {
+                        addsoftwareRow();
+                        const rows = tbody.querySelectorAll(".subform-row");
+                        const newRow = rows[rows.length - 1];
+                        
+                        if(newRow.querySelector(".sw-bank-name")) newRow.querySelector(".sw-bank-name").value = bank.Bank_Name || "";
+                        if(newRow.querySelector(".sw-last4")) newRow.querySelector(".sw-last4").value = bank.Last_4_digits || "";
+                        
+                        const bizPersonalSelect = newRow.querySelector(".sw-biz-personal");
+                        if (bizPersonalSelect && bank.Business_or_personal) {
+                            let vals = Array.isArray(bank.Business_or_personal) ? bank.Business_or_personal : [bank.Business_or_personal];
+                            Array.from(bizPersonalSelect.options).forEach(opt => {
+                                if(vals.includes(opt.value)) opt.selected = true;
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    // STEP 3: Income Overview
+    if (incomeRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "All_Entity_Income_Overviews", id: incomeRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[2];
+                
+                // Multi-select for Primary_income_sources
+                const sourcesSelect = step.querySelector("#Primary_income_sources");
+                if (sourcesSelect && d.Primary_income_sources) {
+                    let vals = Array.isArray(d.Primary_income_sources) ? d.Primary_income_sources : [d.Primary_income_sources];
+                    Array.from(sourcesSelect.options).forEach(opt => {
+                        if(vals.includes(opt.value)) opt.selected = true;
+                    });
+                }
+                
+                if(step.querySelector("#Approximate_gross_revenue_for_the_year")) step.querySelector("#Approximate_gross_revenue_for_the_year").value = d.Approximate_gross_revenue_for_the_year || "";
+                if(step.querySelector("#Did_you_receive_any_1099s")) step.querySelector("#Did_you_receive_any_1099s").value = d.Did_you_receive_any_1099s || "";
+            }
+        });
+    }
+
+    // STEP 4: Expenses & Assets
+    if (expensesRecordId) {
+         ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "Entity_Expenses_Assets_Report", id: expensesRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[3];
+
+                const emp = step.querySelector("#Do_you_have_employees");
+                if(emp) { emp.value = d.Do_you_have_employees || "No"; emp.dispatchEvent(new Event('change')); }
+                if(step.querySelector("#Payroll_provider")) step.querySelector("#Payroll_provider").value = d.Payroll_provider || "";
+                if(step.querySelector("#Number_of_employees")) step.querySelector("#Number_of_employees").value = d.Number_of_employees || "";
+
+                const assets = step.querySelector("#Did_you_purchase_or_sell_any_business_assets_this_year");
+                if(assets) { assets.value = d.Did_you_purchase_or_sell_any_business_assets_this_year || "No"; assets.dispatchEvent(new Event('change')); }
+                if(step.querySelector("#Asset_type")) step.querySelector("#Asset_type").value = d.Asset_type || "";
+                if(step.querySelector("#Purchase_Date")) step.querySelector("#Purchase_Date").value = d.Purchase_Date || "";
+                if(step.querySelector("#Purchase_price")) step.querySelector("#Purchase_price").value = d.Purchase_price || "";
+
+                const vehicle = step.querySelector("#Do_you_use_a_vehicle_for_business");
+                if(vehicle) { vehicle.value = d.Do_you_use_a_vehicle_for_business || "No"; vehicle.dispatchEvent(new Event('change')); }
+                
+                // Vehicle Ownership Checkboxes
+                if (d.Vehicle_ownership) {
+                    let vals = Array.isArray(d.Vehicle_ownership) ? d.Vehicle_ownership : [d.Vehicle_ownership];
+                    const checkboxes = step.querySelectorAll('input[name="Vehicle_ownership"]');
+                    checkboxes.forEach(cb => {
+                        if (vals.includes(cb.value)) cb.checked = true;
+                    });
+                }
+                if(step.querySelector("#Mileage_tracking_method")) step.querySelector("#Mileage_tracking_method").value = d.Mileage_tracking_method || "";
+            }
+        });
+    }
+
+    // STEP 5: Ownership Details
+    if (ownershipRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "Entity_Ownership_Shareholders_Members_Report", id: ownershipRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[4];
+
+                if(step.querySelector("#Number_of_owners")) step.querySelector("#Number_of_owners").value = d.Number_of_owners || "";
+                
+                const ownChanges = step.querySelector("#Any_ownership_changes_during_the_year");
+                if(ownChanges) { ownChanges.value = d.Any_ownership_changes_during_the_year || "No"; ownChanges.dispatchEvent(new Event('change')); }
+                if(step.querySelector("#Details_of_change")) step.querySelector("#Details_of_change").value = d.Details_of_change || "";
+                if(step.querySelector("#Date_of_change")) step.querySelector("#Date_of_change").value = d.Date_of_change || "";
+
+                // Populate Subform
+                if (d.Owner_Details && d.Owner_Details.length > 0) {
+                    const tbody = document.querySelector("#customSubformTableOWNER tbody");
+                    if (tbody) tbody.innerHTML = "";
+                    d.Owner_Details.forEach(owner => {
+                        addOwnerRow();
+                        const rows = tbody.querySelectorAll(".subform-row");
+                        const newRow = rows[rows.length - 1];
+
+                        let fullName = "";
+                        if(owner.Owner_Name) {
+                            fullName = `${owner.Owner_Name.first_name || ""} ${owner.Owner_Name.last_name || ""}`.trim();
+                        }
+                        if(newRow.querySelector(".ow-name")) newRow.querySelector(".ow-name").value = fullName;
+                        if(newRow.querySelector(".ow-ownership")) newRow.querySelector(".ow-ownership").value = owner.Ownership || "";
+                        if(newRow.querySelector(".ow-role")) newRow.querySelector(".ow-role").value = owner.Role || "";
+                        if(newRow.querySelector(".ow-ssn")) newRow.querySelector(".ow-ssn").value = owner.SSN_ITIN || "";
+                        if(newRow.querySelector(".ow-email")) newRow.querySelector(".ow-email").value = owner.Email || "";
+                        if(newRow.querySelector(".ow-active")) newRow.querySelector(".ow-active").value = owner.Is_this_owner_active_in_the_business || "";
+
+                        if (owner.Owner_Address) {
+                            if(newRow.querySelector(".ow-address-line-1")) newRow.querySelector(".ow-address-line-1").value = owner.Owner_Address.address_line_1 || "";
+                            if(newRow.querySelector(".ow-address-line-2")) newRow.querySelector(".ow-address-line-2").value = owner.Owner_Address.address_line_2 || "";
+                            if(newRow.querySelector(".ow-city")) newRow.querySelector(".ow-city").value = owner.Owner_Address.district_city || "";
+                            if(newRow.querySelector(".ow-postal")) newRow.querySelector(".ow-postal").value = owner.Owner_Address.postal_Code || "";
+
+                            if(newRow.querySelector(".ow-country")) {
+                                newRow.querySelector(".ow-country").value = owner.Owner_Address.country || "";
+                                newRow.querySelector(".ow-country").dispatchEvent(new Event('change'));
+                            }
+                            setTimeout(() => {
+                                if(newRow.querySelector(".ow-state")) newRow.querySelector(".ow-state").value = owner.Owner_Address.state_province || "";
+                            }, 100);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    // STEP 6: Compliance
+    if (complianceRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "Entity_Compliance_Special_Situations_Report", id: complianceRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[5];
+                if(step.querySelector("#Any_sales_tax_obligations")) step.querySelector("#Any_sales_tax_obligations").value = d.Any_sales_tax_obligations || "";
+                if(step.querySelector("#Any_foreign_owners_or_foreign_income")) step.querySelector("#Any_foreign_owners_or_foreign_income").value = d.Any_foreign_owners_or_foreign_income || "";
+                if(step.querySelector("#Any_estimated_tax_payments_made")) step.querySelector("#Any_estimated_tax_payments_made").value = d.Any_estimated_tax_payments_made || "";
+                if(step.querySelector("#Any_major_changes_expected_next_year")) step.querySelector("#Any_major_changes_expected_next_year").value = d.Any_major_changes_expected_next_year || "";
+            }
+        });
+    }
+
+    // STEP 7: Prior Year Filings
+    if (priorYearRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "All_Entity_Prior_year_Filings", id: priorYearRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[6];
+                if(step.querySelector("#Have_prior_year_business_tax_returns_been_filed")) step.querySelector("#Have_prior_year_business_tax_returns_been_filed").value = d.Have_prior_year_business_tax_returns_been_filed || "";
+                if(step.querySelector("#Any_notices_from_IRS_or_state_agencies")) step.querySelector("#Any_notices_from_IRS_or_state_agencies").value = d.Any_notices_from_IRS_or_state_agencies || "";
+            }
+        });
+    }
+
+    // STEP 8: Tax Classification
+    if (taxClassRecordId) {
+        ZOHO.CREATOR.API.getRecordById({
+            appName: APP_NAME, reportName: "All_Entity_Tax_Classifications", id: taxClassRecordId
+        }).then(function(res) {
+            if (res.code === 3000) {
+                const d = res.data;
+                const step = formSteps[7];
+                if(step.querySelector("#How_is_the_entity_currently_taxed")) step.querySelector("#How_is_the_entity_currently_taxed").value = d.How_is_the_entity_currently_taxed || "";
+                
+                const sCorp = step.querySelector("#Has_the_entity_ever_made_an_S_Corp_election");
+                if (sCorp) { sCorp.value = d.Has_the_entity_ever_made_an_S_Corp_election || "No"; sCorp.dispatchEvent(new Event('change')); }
+                
+                if(step.querySelector("#Effective_date_of_S_Corp_election")) step.querySelector("#Effective_date_of_S_Corp_election").value = d.Effective_date_of_S_Corp_election || "";
+                if(step.querySelector("#Is_the_entity_new_this_tax_year")) step.querySelector("#Is_the_entity_new_this_tax_year").value = d.Is_the_entity_new_this_tax_year || "";
+                if(step.querySelector("#Is_this_entity_part_of_a_group_or_related_to_other_businesses")) step.querySelector("#Is_this_entity_part_of_a_group_or_related_to_other_businesses").value = d.Is_this_entity_part_of_a_group_or_related_to_other_businesses || "";
+                if(step.querySelector("#List_related_entities")) step.querySelector("#List_related_entities").value = d.List_related_entities || "";
+            }
+        });
+    }
 }
 
 // ======================================
@@ -340,26 +658,19 @@ function fetchCountries() {
 // ======================================
 // UTILITIES
 // ======================================
-// ======================================
-// TOGGLE FUNCTIONS (CONDITIONAL LOGIC)
-// ======================================
-
-// Helper function: Hides the input AND its corresponding <label for="...">
 function toggleStandardField(selectElement, targetId) {
     const target = document.querySelector(`#${targetId}`);
     if (!target) return;
     
-    // Find the label that points to this specific input (if it exists)
     const label = document.querySelector(`label[for="${targetId}"]`);
 
     if (selectElement && selectElement.value === "Yes") {
-        target.style.display = ""; // Reverts to CSS default (visible)
+        target.style.display = ""; 
         if (label) label.style.display = "";
     } else {
         target.style.display = "none";
         if (label) label.style.display = "none";
         
-        // Clear value when hidden to prevent saving phantom data
         if (target.tagName === "SELECT") target.selectedIndex = 0;
         else target.value = ""; 
     }
@@ -386,7 +697,6 @@ function toggleAccessSoftwareSubform() {
         subformTable.style.display = "none";
         if (subformContainer) subformContainer.style.display = "none";
         
-        // Clear subform data and initialize one empty row
         const tbody = subformTable.querySelector("tbody");
         if (tbody) {
             tbody.innerHTML = ""; 
@@ -414,7 +724,6 @@ function toggleVehicleBusiness() {
     const mileageInput = document.querySelector("#Mileage_tracking_method");
     
     if (mileageInput) {
-        // Target the <div class="form-group"> that wraps both the checkboxes and the mileage input
         const container = mileageInput.closest(".form-group");
         
         if (container) {
@@ -422,11 +731,7 @@ function toggleVehicleBusiness() {
                 container.style.display = "block";
             } else {
                 container.style.display = "none";
-                
-                // Clear the mileage text input
                 mileageInput.value = "";
-                
-                // Uncheck all vehicle checkboxes
                 const checkboxes = container.querySelectorAll('input[name="Vehicle_ownership"]');
                 checkboxes.forEach(cb => cb.checked = false);
             }
@@ -611,17 +916,16 @@ function serializeSoftwareSubform() {
         const bankName = row.querySelector(".sw-bank-name").value.trim();
         const last4 = row.querySelector(".sw-last4").value.trim();
         
-        // Extract all selected values from the multi-select dropdown
         const bizPersonalSelect = row.querySelector(".sw-biz-personal");
         const bizPersonalValues = Array.from(bizPersonalSelect.selectedOptions)
                                        .map(option => option.value)
-                                       .filter(value => value !== ""); // Filter out the disabled "-Select-" option
+                                       .filter(value => value !== "");
 
         if (bankName) {
             dataArray.push({
                 "Bank_Name": bankName,
                 "Last_4_digits": last4,
-                "Business_or_personal": bizPersonalValues, // Passes the array of selected values
+                "Business_or_personal": bizPersonalValues,
                 "record::status": "added",
                 "row::key": `t::row_${index + 1}`
             });
@@ -698,7 +1002,6 @@ function saveEntIncomeDetails() {
     const stepIndex = 2;
     const sourcesSelect = formSteps[stepIndex].querySelector("#Primary_income_sources");
     
-    // Safely extract all selected values and filter out the default "-Select-" option
     const primarySources = Array.from(sourcesSelect.selectedOptions)
                                 .map(option => option.value)
                                 .filter(value => value !== "");
@@ -708,7 +1011,7 @@ function saveEntIncomeDetails() {
             Clients: formSteps[stepIndex].querySelector("#Clients").value,
             Case: formSteps[stepIndex].querySelector("#Case").value,
             Entity_Master: formSteps[stepIndex].querySelector("#Entity_Master").value,
-            Primary_income_sources: primarySources, // Passes the clean array to Zoho
+            Primary_income_sources: primarySources, 
             Approximate_gross_revenue_for_the_year: formSteps[stepIndex].querySelector("#Approximate_gross_revenue_for_the_year").value,
             Did_you_receive_any_1099s: formSteps[stepIndex].querySelector("#Did_you_receive_any_1099s").value
         }
@@ -735,7 +1038,6 @@ function updateEntIncomeDetails() {
     const stepIndex = 2;
     const sourcesSelect = formSteps[stepIndex].querySelector("#Primary_income_sources");
     
-    // Safely extract all selected values and filter out the default "-Select-" option
     const primarySources = Array.from(sourcesSelect.selectedOptions)
                                 .map(option => option.value)
                                 .filter(value => value !== "");
@@ -847,8 +1149,6 @@ function addOwnerRow() {
     newRow.className = "subform-row";
     newRow.style.borderBottom = "1px solid #edf2f7";
     
-    // Notice the IDs have been changed to classes (e.g., ow-address-line-1, ow-country) 
-    // to prevent duplicate ID conflicts across multiple rows.
     newRow.innerHTML = `
         <td style="padding: 8px 0; text-align: center;">
             <button type="button" onclick="removeOwnerRow(this)" style="background:none; border:none; color:#e53e3e; cursor:pointer; font-weight:bold; font-size: 18px;">&times;</button>
@@ -918,9 +1218,6 @@ function addOwnerRow() {
     `;
     tbody.appendChild(newRow);
 
-    // ======================================
-    // Populate Countries specifically for this row
-    // ======================================
     const countrySelect = newRow.querySelector('.ow-country');
     const stateSelect = newRow.querySelector('.ow-state');
 
@@ -942,7 +1239,6 @@ function addOwnerRow() {
         countrySelect.innerHTML = '<option value="" disabled selected>Failed to load</option>';
     }
 
-    // Handle State population on Country change for this row
     countrySelect.addEventListener('change', (e) => {
         const selectedOption = countrySelect.options[countrySelect.selectedIndex];
         const states = JSON.parse(selectedOption.dataset.states || '[]');
@@ -973,7 +1269,6 @@ function serializeOwnerSubform() {
     let dataArray = [];
 
     rows.forEach((row, index) => {
-        // 1. Handle Compound Name Field (Split single input into First and Last Name)
         const fullName = row.querySelector(".ow-name").value.trim();
         const nameParts = fullName.split(" ");
         const firstName = nameParts[0] || "";
@@ -984,7 +1279,6 @@ function serializeOwnerSubform() {
             "last_name": lastName
         };
 
-        // 2. Handle Compound Address Field
         const addressObj = {
             "address_line_1": row.querySelector(".ow-address-line-1").value.trim(),
             "address_line_2": row.querySelector(".ow-address-line-2").value.trim(),
@@ -994,7 +1288,6 @@ function serializeOwnerSubform() {
             "country": row.querySelector(".ow-country").value || ""
         };
 
-        // 3. Get remaining standard fields
         const ownership = row.querySelector(".ow-ownership").value.trim();
         const role = row.querySelector(".ow-role").value;
         const ssn = row.querySelector(".ow-ssn").value.trim();
@@ -1003,11 +1296,11 @@ function serializeOwnerSubform() {
 
         if (fullName) {
             dataArray.push({
-                "Owner_Name": JSON.stringify(ownerNameObj), // Formatted as stringified JSON
+                "Owner_Name": JSON.stringify(ownerNameObj), 
                 "Ownership": ownership,
                 "Role": role,
-                "SSN_ITIN": ssn, // Updated API name
-                "Owner_Address": JSON.stringify(addressObj), // Formatted as stringified JSON
+                "SSN_ITIN": ssn, 
+                "Owner_Address": JSON.stringify(addressObj), 
                 "Email": email,
                 "Is_this_owner_active_in_the_business": isActive,
                 "record::status": "added",
@@ -1158,7 +1451,6 @@ function saveEntPriorDetails() {
         if (response.code == 3000) {
             priorYearRecordId = response.data.ID;
             
-            // Handle file upload separately
             const fileInput = formSteps[stepIndex].querySelector("#Upload_prior_year_returns");
             if (fileInput && fileInput.files.length > 0) {
                 ZOHO.CREATOR.API.uploadFile({
@@ -1247,7 +1539,7 @@ function saveEnttaxDetails() {
                 btn.innerText = "Update & Next";
                 btn.onclick = updateEnttaxDetails;
                 steps[stepIndex].classList.add("completed");
-                showStep(9);
+                loadStep9Documents();
             });
         }
     });
@@ -1275,7 +1567,7 @@ function updateEnttaxDetails() {
         if (response.code == 3000) {
             syncMasterRecord(8, taxClassRecordId).then(() => {
                 showToast("Tax Classification Updated");
-                showStep(9);
+                loadStep9Documents();
             });
         }
     });
@@ -1346,7 +1638,95 @@ function confirmSubmit() {
 }
 
 // ======================================
-// STEP 9: DOCUMENTS DETAILS
+// STEP 9: DOCUMENTS DETAILS DYNAMIC LOAD
+// ======================================
+let isStep9Loaded = false;
+
+function loadStep9Documents() {
+    if (isStep9Loaded) {
+        showStep(9);
+        return;
+    }
+
+    const caseId = document.querySelector("#Case").value;
+
+    if (!caseId) {
+        console.warn("No Case ID found. Proceeding to Step 9 without prefilling.");
+        showStep(9);
+        return;
+    }
+
+    // Call 1: Fetch the specific Case record to get its Request Type
+    var caseConfig = {
+        appName: APP_NAME,          
+        reportName: "All_Requests", 
+        criteria: `(Case == ${caseId})`
+    };
+    
+    console.log(caseConfig);
+    ZOHO.CREATOR.API.getAllRecords(caseConfig).then(function (caseResponse) {
+        console.log("Case Record Fetched:", caseResponse);
+        
+        const requestType = caseResponse.data[0].Request_Type; 
+
+        if (!requestType) {
+            console.warn("No Request Type found on this Case. Proceeding with an empty row.");
+            addDocumentRow();
+            isStep9Loaded = true;
+            showStep(9);
+            return Promise.reject("NO_REQUEST_TYPE"); 
+        }
+
+        // Call 2: Fetch the checklist items based on the extracted Request Type
+        var checklistConfig = {
+            appName: APP_NAME,                     
+            reportName: "All_Document_Checklist_Items", 
+            criteria: `(Case_Type == "${requestType}")` 
+        };
+
+        return ZOHO.CREATOR.API.getAllRecords(checklistConfig);
+
+    }).then(function (checklistResponse) {
+        console.log("Fetched Checklist Items:", checklistResponse);
+        
+        const tbody = document.querySelector("#customSubformTableDOCS tbody");
+        
+        tbody.innerHTML = ""; 
+        
+        if (checklistResponse && checklistResponse.data && checklistResponse.data.length > 0) {
+            checklistResponse.data.forEach(function (record) {
+                addDocumentRow(); 
+                
+                const rows = tbody.querySelectorAll(".subform-row");
+                const newRow = rows[rows.length - 1];
+                
+                const docInput = newRow.querySelector(".sf-document");
+                const docTypeInput = newRow.querySelector(".sf-doc-type");
+                
+                if (docInput) docInput.value = record.Document_Name || "";
+                if (docTypeInput) docTypeInput.value = record.Document_Type || "";
+            });
+        } else {
+            addDocumentRow();
+        }
+
+        isStep9Loaded = true;
+        showStep(9);
+
+    }).catch(function (error) {
+        if (error !== "NO_REQUEST_TYPE") {
+            console.error("Error fetching data for Step 9:", error);
+            const tbody = document.querySelector("#customSubformTableDOCS tbody");
+            if (tbody && tbody.querySelectorAll(".subform-row").length === 0) {
+                addDocumentRow();
+            }
+            showStep(9);
+        }
+    });
+}
+
+// ======================================
+// STEP 9: DOCUMENTS DETAILS SAVING
 // ======================================
 function saveDocumentsDetails() {
     executeSaveDocumentsDetails();
@@ -1528,8 +1908,10 @@ function executeSaveDocumentsDetails() {
 
                 showToast("Documents & Files Saved Successfully!");
                 const btn = formSteps[stepIndex].querySelector("#basicBtn"); 
-                btn.innerText = "Update";
-                btn.onclick = updateDocumentsDetails; 
+                if (btn) {
+                    btn.innerText = "Update";
+                    btn.onclick = updateDocumentsDetails; 
+                }
                 steps[stepIndex].classList.add("completed");
                 showSubmitModal('submit');
             } catch (error) {
@@ -1634,4 +2016,3 @@ function uploadSingleFile(fieldName, file, subformRowId) {
         file: file
     });
 }
-
